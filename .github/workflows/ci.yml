@@ -90,4 +90,4 @@ jobs:
             "FRAPPE_BRANCH=${{ inputs.frappe-version || env.FRAPPE_VERSION }}"
             "PYTHON_VERSION=${{ inputs.py-version || env.PY_VERSION }}"
             "NODE_VERSION=${{ inputs.nodejs-version || env.NODEJS_VERSION }}"
-            "APPS_JSON_BASE64=${{ inputs.apps-json-base64 || env.APPS_JSON_BASE64 }}"
+            "APPS_JSON_BASE64=${{ env.APPS_JSON_BASE64 }}"
