@@ -1,8 +1,16 @@
-docker build \
+docker build --progress=plain \
   --build-arg=FRAPPE_PATH=https://github.com/frappe/frappe \
   --build-arg=FRAPPE_BRANCH=version-15 \
-  --build-arg=PYTHON_VERSION=3.11.9 \
+  --build-arg=PYTHON_VERSION=3.10.12 \
   --build-arg=NODE_VERSION=22.11.0 \
   --build-arg=APPS_JSON_BASE64=$APPS_JSON_BASE64 \
   --tag=ghcr.io/inventive-business-solutions/thermax-devops/thermax_image:1.0.0 \
-  --file=images/custom/Containerfile .
+  --file=images/custom/Containerfile --no-cache.
+
+
+docker build --no-cache \
+  --build-arg=FRAPPE_PATH=https://github.com/frappe/frappe \
+  --build-arg=FRAPPE_BRANCH=version-15 \
+  --build-arg=APPS_JSON_BASE64=$APPS_JSON_BASE64 \
+  --tag=ghcr.io/user/repo/custom:1.0.0 \
+  --file=images/layered/Containerfile .
