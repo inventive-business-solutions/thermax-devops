@@ -71,7 +71,7 @@ jobs:
         id: source-build-env
         run: |
           cat ./ci/build.env >> $GITHUB_ENV
-          echo "APPS_JSON_BASE64=$(base64 -w 0 ./ci/apps.json)" >> $GITHUB_ENV
+          # echo "APPS_JSON_BASE64=$(base64 -w 0 ./ci/apps.json)" >> $GITHUB_ENV
 
       # Remove the line that sets VERSION from version.txt
       # echo "VERSION=$(cat ./ci/version.txt)" >> $GITHUB_ENV
