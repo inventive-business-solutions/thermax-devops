@@ -1,0 +1,40 @@
+version: "3.7"
+
+services:
+  configurator:
+    image: ${IMAGE_NAME}:${VERSION:?No image version set}
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+    entrypoint: ["bash", "-c"]
+    command:
+      - >
+        bench --site frappe.thermaxenaibot.co.in install-app thermax_backend;
+        bench --site frappe.thermaxenaibot.co.in install-app nextintegration;
+    deploy:
+      restart_policy:
+        condition: none
+    environment:
+      DB_HOST: mariadb_db
+      DB_PORT: 3306
+      REDIS_CACHE: redis-cache:6379
+      REDIS_QUEUE: redis-queue:6379
+      REDIS_SOCKETIO: redis-socketio:6379
+      SOCKETIO_PORT: 9000
+    networks:
+      - mariadb-network
+      - bench-network
+
+networks:
+  bench-network:
+    name: ${BENCH_NAME:-erpnext}
+    external: true
+  mariadb-network:
+    name: mariadb-network
+    external: true
+
+volumes:
+  sites:
+    external: true
+    # set to name of the sites volume
+    name: ${BENCH_NAME:-erpnext}_sites
+# IMAGE_NAME and VERSION are set in the environment. BENCH_NAME is set in the environment or defaults to erpnext.
