@@ -8,6 +8,7 @@ services:
     entrypoint: ["bash", "-c"]
     command:
       - >
+        ls -1 apps > sites/apps.txt;
         bench --site frappe.thermaxenaibot.co.in install-app thermax_backend;
         bench --site frappe.thermaxenaibot.co.in install-app nextintegration;
     deploy:
