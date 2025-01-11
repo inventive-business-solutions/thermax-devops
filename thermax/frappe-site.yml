@@ -1,5 +1,3 @@
-version: "3.7"
-
 services:
   backend:
     image: ghcr.io/inventive-business-solutions/thermax-devops/thermax_image:latest
@@ -33,7 +31,7 @@ services:
     networks:
       - bench-network
     ports:
-      - "8080:8080"
+      - "8000:8000"
 
   queue-default:
     image: ghcr.io/inventive-business-solutions/thermax-devops/thermax_image:latest
