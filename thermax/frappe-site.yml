@@ -1,0 +1,183 @@
+version: "3.7"
+
+services:
+  backend:
+    image: ghcr.io/inventive-business-solutions/thermax-devops/thermax_image:latest
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - mariadb-network
+      - bench-network
+
+  frontend:
+    image: ghcr.io/inventive-business-solutions/thermax-devops/thermax_image:latest
+    command:
+      - nginx-entrypoint.sh
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      BACKEND: backend:8000
+      FRAPPE_SITE_NAME_HEADER: $$host
+      SOCKETIO: websocket:9000
+      UPSTREAM_REAL_IP_ADDRESS: 127.0.0.1
+      UPSTREAM_REAL_IP_HEADER: X-Forwarded-For
+      UPSTREAM_REAL_IP_RECURSIVE: "off"
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - bench-network
+    ports:
+      - "8080:8080"
+
+  queue-default:
+    image: ghcr.io/inventive-business-solutions/thermax-devops/thermax_image:latest
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - bench
+      - worker
+      - --queue
+      - default
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - mariadb-network
+      - bench-network
+
+  queue-long:
+    image: ghcr.io/inventive-business-solutions/thermax-devops/thermax_image:latest
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - bench
+      - worker
+      - --queue
+      - long
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - mariadb-network
+      - bench-network
+
+  queue-short:
+    image: ghcr.io/inventive-business-solutions/thermax-devops/thermax_image:latest
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - bench
+      - worker
+      - --queue
+      - short
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - mariadb-network
+      - bench-network
+
+  scheduler:
+    image: ghcr.io/inventive-business-solutions/thermax-devops/thermax_image:latest
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command:
+      - bench
+      - schedule
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - mariadb-network
+      - bench-network
+
+  websocket:
+    image: ghcr.io/inventive-business-solutions/thermax-devops/thermax_image:latest
+    command:
+      - node
+      - /home/frappe/frappe-bench/apps/frappe/socketio.js
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - mariadb-network
+      - bench-network
+
+  migration:
+    image: ghcr.io/inventive-business-solutions/thermax-devops/thermax_image:latest
+    deploy:
+      restart_policy:
+        condition: none
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        bench --site all set-config -p maintenance_mode 1
+        bench --site all set-config -p pause_scheduler 1
+        bench --site all migrate
+        bench --site all set-config -p maintenance_mode 0
+        bench --site all set-config -p pause_scheduler 0
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks:
+      - mariadb-network
+      - bench-network
+
+  redis-cache:
+    image: redis:6.2-alpine
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - redis-cache-data:/data
+    networks:
+      - bench-network
+
+  redis-queue:
+    image: redis:6.2-alpine
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - redis-queue-data:/data
+    networks:
+      - bench-network
+
+  redis-socketio:
+    image: redis:6.2-alpine
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - redis-socketio-data:/data
+    networks:
+      - bench-network
+
+volumes:
+  db-data:
+  redis-cache-data:
+  redis-queue-data:
+  redis-socketio-data:
+  sites:
+  logs:
+
+networks:
+  bench-network:
+    name: ${BENCH_NAME:-erpnext}
+    external: false
+  mariadb-network:
+    name: mariadb-network
+    external: true
