@@ -29,12 +29,15 @@ services:
         - traefik.http.routers.traefik-public-https.entrypoints=https
         - traefik.http.routers.traefik-public-https.tls=true
         - traefik.http.routers.traefik-public-https.service=api@internal
-        - traefik.http.routers.traefik-public-https.tls.certresolver=le
         - traefik.http.routers.traefik-public-https.middlewares=admin-auth
         - traefik.http.services.traefik-public.loadbalancer.server.port=8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik-public-certificates:/certificates
+      - /data/devops/ssl:/certs:ro # Mount your custom certificates
+    tls:
+      certificates:
+        - certFile: /certs/server.crt
+          keyFile: /certs/server_no_pass.key
     command:
       - --providers.docker
       - --providers.docker.constraints=Label(`traefik.constraint-label`, `traefik-public`)
@@ -42,12 +45,9 @@ services:
       - --providers.docker.swarmmode
       - --entrypoints.http.address=:80
       - --entrypoints.https.address=:443
-      - --certificatesresolvers.le.acme.email=${EMAIL?Variable not set}
-      - --certificatesresolvers.le.acme.storage=/certificates/acme.json
-      - --certificatesresolvers.le.acme.tlschallenge=true
       - --accesslog
       - --log
-      - --api
+      - --api.insecure=true # Enable insecure dashboard for debugging
     networks:
       - traefik-public
 

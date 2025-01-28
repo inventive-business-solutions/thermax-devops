@@ -1,7 +1,7 @@
 services:
   db:
     image: mariadb:10.6
-    container_name: mariadb
+    container_name: mariadb_container
     healthcheck:
       test: mysqladmin ping -h localhost --password=${DB_PASSWORD:-admin}
       interval: 1s
