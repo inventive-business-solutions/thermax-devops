@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  nextjs:
+    image: ghcr.io/inventive-business-solutions/thermax-frontend-thermax:latest
+    networks:
+      - traefik-public
+    deploy:
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.middlewares.prod-redirect.redirectscheme.scheme=https
+        # Change router name prefix from erpnext to the name of stack in case of multi bench setup
+        - traefik.http.routers.nextjs-http.rule=Host(`enimaxqa.thermaxdomain.com`)
+        - traefik.http.routers.nextjs-http.entrypoints=http
+        # Remove following lines in case of local setup
+        - traefik.http.routers.nextjs-http.middlewares=prod-redirect
+        - traefik.http.routers.nextjs-https.rule=Host(`enimaxqa.thermaxdomain.com`)
+        - traefik.http.routers.nextjs-https.entrypoints=https
+        - traefik.http.routers.nextjs-https.tls=true
+        - traefik.http.services.nextjs.loadbalancer.server.port=3000
+    environment:
+      - NODE_ENV=production
+      - NODE_EXTRA_CA_CERTS=/etc/ssl/certs/server.crt
+    extra_hosts:
+      - "frappeenimaxqa.thermaxdomain.com:10.211.23.80"
+    volumes:
+      - /data/devops/ssl:/etc/ssl/certs # Mount the SSL directory into the container
+
+networks:
+  traefik-public:
+    external: true

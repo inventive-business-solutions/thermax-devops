@@ -33,8 +33,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik-public-certificates:/certificates
       - /data/devops/ssl:/ssl # Mount the SSL directory into the container
-      - /data/devops/cert:/cert
-      - /data/devops/custom_containers/compose/dynamic_conf.yml:/data/devops/custom_containers/compose/dynamic_conf.yml
     command:
       - --providers.docker
       - --providers.docker.constraints=Label(`traefik.constraint-label`, `traefik-public`)
@@ -42,7 +40,7 @@ services:
       - --providers.swarm.endpoint=unix:///var/run/docker.sock
       - --entrypoints.http.address=:80
       - --entrypoints.https.address=:443
-      - --providers.file.filename=/data/devops/custom_containers/compose/dynamic_conf.yml # Load dynamic config
+      - --providers.file.filename=/ssl/dynamic_conf.yml # Load dynamic config
       - --accesslog
       - --log
       - --api
